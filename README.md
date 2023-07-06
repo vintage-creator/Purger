@@ -15,7 +15,7 @@
   <div>
     <p>Step 1:</p>
     <p>Clone the repository to your local machine:</p>
-    <pre><code>git clone [https://github.com/your-username/purger.git](https://github.com/vintage-creator/purger.git)</code></pre>
+    <pre><code>git clone https://github.com/vintage-creator/purger.git</code></pre>
   </div>
   <div>
     <p>Step 2:</p>
