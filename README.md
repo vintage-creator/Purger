@@ -1,46 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <style>
-    h2 {
-      font-size: 24px;
-      font-weight: bold;
-      margin-bottom: 16px;
-    }
-    h3 {
-  font-size: 20px;
-  font-weight: bold;
-  margin-bottom: 12px;
-}
-
-p {
-  font-size: 16px;
-  line-height: 1.5;
-  margin-bottom: 8px;
-}
-
-code {
-  font-family: Consolas, monospace;
-  font-size: 14px;
-  background-color: #f4f4f4;
-  padding: 4px;
-}
-
-pre {
-  background-color: #f4f4f4;
-  padding: 12px;
-  overflow-x: auto;
-}
-
-.installation-step {
-  margin-bottom: 16px;
-}
-
-.highlight {
-  background-color: #ffffcc;
-  padding: 4px;
-}
-  </style>
 </head>
 <body>
   <h2>Purger - Installation Guide</h2>
