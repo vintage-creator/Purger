@@ -4,18 +4,31 @@ const path = require("path");
 const fs = require("fs");
 const yaml = require("js-yaml");
 const redis = require("redis");
-const redisClient = redis.createClient();
 
-//Redis server listening on port 6379
-  redisClient.on('error', (error) => console.error(`Error: ${error}`));
+let redisClient = redis.createClient({
+  password: process.env.Redis_Pass,
+  socket: {
+    host: process.env.Redis_Host,
+    port: process.env.Redis_Port,
+  },
+});
+(async function () {
+  await redisClient.connect();
+})();
+// connect and error events
+redisClient.on("error", function (err) {
+  console.log("Something went wrong ", err);
+});
+redisClient.on("connect", function () {
+  console.log("Redis Connected!");
+});
 
 //Create a configuration file
 const createConfig = async (req, res) => {
   const { Directory_Path, Files_to_Clean, Files_to_Exempt, Schedule } =
     req.body;
-    console.log(req.user)
-  const _id = req.user._id;
-  if (!Directory_Path || !Files_to_Clean || !Files_to_Exempt || !Schedule) {
+  const _id = req.user.id;
+  if (!Directory_Path || !Files_to_Clean || !Schedule) {
     res.status(400).json({
       status: "error",
       message: "All fields are required",
@@ -71,36 +84,32 @@ const createConfig = async (req, res) => {
 
 //Get configuration files
 const getConfig = async (req, res) => {
-  const { _id } = req.user;
+  const _id = req.user.id;
   try {
     // Check if the data is already cached in Redis
-    redisClient.get(_id, async (err, cachedData) => {
-      if (err) {
-        throw new Error("Error retrieving cached data");
-      }
-
-      if (cachedData) {
-        // Data is available in cache, return it
-        const configFiles = JSON.parse(cachedData);
-        res.status(200).json({
-          fromCache: true,
-          status: "success",
-          data: configFiles,
-        });
-      } else {
-        // Data is not cached, fetch it from the database
-        const configFiles = await cleanUp.find({ user: _id }).sort({ _id: -1 });
-        // Cache the data in Redis for future requests
-        redisClient.set(_id, JSON.stringify(configFiles), {
-            EX: 180, NX: true
-        });
-        res.status(200).json({
-          fromCache: false,
-          status: "success",
-          data: configFiles,
-        });
-      }
-    });
+    const cachedData = await redisClient.get(_id);
+    if (cachedData) {
+      // Data is available in cache, return it
+      const configFiles = JSON.parse(cachedData);
+      res.status(200).json({
+        fromCache: true,
+        status: "success",
+        data: configFiles,
+      });
+    } else {
+      // Data is not cached, fetch it from the database
+      const configFiles = await cleanUp.find({ user: _id }).sort({ _id: -1 });
+      // Cache the data in Redis for future requests
+      redisClient.set(_id, JSON.stringify(configFiles), {
+        EX: 180,
+        NX: true,
+      });
+      res.status(200).json({
+        fromCache: false,
+        status: "success",
+        data: configFiles,
+      });
+    }
   } catch (error) {
     res.status(400).json({
       status: "error",
@@ -115,28 +124,32 @@ const getAConfig = async (req, res) => {
     const { id } = req.params;
 
     // Check if the data is already cached in Redis
-    redisClient.get(id, async (err, cachedData) => {
-      if (err) {
-        throw new Error("Error retrieving cached data");
-      }
-
-      if (cachedData) {
-        // Data is available in cache, return it
-        const configFile = JSON.parse(cachedData);
+    const cachedData = await redisClient.get(id);
+    if (cachedData) {
+      // Data is available in cache, return it
+      const configFile = JSON.parse(cachedData);
+      res.status(200).json({
+        fromCache: true,
+        status: "success",
+        data: configFile,
+      });
+    } else {
+      // Data is not cached, fetch it from the database
+      const configFile = await cleanUp.findOne({ user: id });
+      if (configFile !== null) {
+        // Cache the data in Redis for future requests
+        redisClient.set(id, JSON.stringify(configFile), {
+          EX: 180,
+          NX: true,
+        });
         res.status(200).json({
-          fromCache: true,
+          fromCache: false,
           status: "success",
           data: configFile,
         });
-      } else {
-        // Data is not cached, fetch it from the database
-        const configFile = await cleanUp.findById(id);
-        res.status(200).json({
-          status: "success",
-          data: configFile,
-        });
       }
-    });
+      throw new Error("There's no clean-up configuration file.");
+    }
   } catch (err) {
     res.status(400).json({
       status: "error",
@@ -151,8 +164,8 @@ const updateAConfig = async (req, res) => {
     req.body;
 
   try {
-    const { id } = req.params; // /tasks/:id
-    const configFile = await cleanUp.findById(id);
+    const { id } = req.params;
+    const configFile = await cleanUp.findOne({ user: id });
     if (!configFile) {
       throw new Error("Not found");
     }
@@ -166,7 +179,7 @@ const updateAConfig = async (req, res) => {
 
     res.status(200).json({
       status: "success",
-      message: "Clean-up configuration has been updated!",
+      message: "Your clean-up configuration has just been updated!",
     });
   } catch (err) {
     res.status(400).json({
@@ -180,10 +193,10 @@ const updateAConfig = async (req, res) => {
 const deleteAConfig = async (req, res) => {
   try {
     const { id } = req.params;
-    await cleanUp.deleteOne(id);
+    await cleanUp.deleteOne({ user: id });
     res.status(200).json({
       status: "success",
-      message: "Clean-up Configuration is deleted",
+      message: "Your clean-up Configuration has been deleted!",
     });
   } catch (err) {
     res.status(400).json({

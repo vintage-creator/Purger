@@ -11,7 +11,6 @@ const cors = require("cors");
 const purgerdb = require("./config/mongo_config.js");
 purgerdb();
 
-app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 app.use(rateLimiter);
@@ -21,6 +20,7 @@ app.use(treblle({
     projectId: process.env.ProjectId
 }));
 
+app.use(cors());
 app.use("/auth", authRoute);
 app.use("/cleanup", cleanUpRoute);
 
@@ -28,11 +28,11 @@ app.use("/cleanup", cleanUpRoute);
 const port = process.env.NODE_ENV === "production" ? process.env.PORT : 6000 
 
 app.get("/", (req, res)=>{
-    res.status(200).send("Welcome to Purger");
+    res.status(200).send("Welcome to Purger, pronounced as '/pur-jar/'");
 });
 
 mongoose.connection.once("open", ()=>{
-    console.log("Connected to MongoDB")
+    console.log("Connected to MongoDB.")
     app.listen(port, (err)=>{
         if(err) {
             throw new Error("Error connecting to the server");
