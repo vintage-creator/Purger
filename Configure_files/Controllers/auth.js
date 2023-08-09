@@ -36,8 +36,8 @@ try {
         password: hashPassword,
         id: uuid.v4()
       });
+      await mailer(email,"Registration is successful", "<h2>Welcome to Purger!</h2><p>Let's get you started cleaning with Purger.</p>", "https://res.cloudinary.com/dcoxo8snb/image/upload/v1691362175/Purger_logo_mu2kjw.png");
       res.status(201).send(`Registration is successful, ${name}`);
-      mailer(email,"Registration is successful", "<h2>Welcome to Purger!</h2><p>Let's get you started cleaning with Purger.</p>" )
 
     } catch (err){
         res.status(400).json({

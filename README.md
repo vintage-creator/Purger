@@ -41,6 +41,9 @@
       <li><strong>cors</strong>: Cross-origin resource sharing middleware</li>
       <li><strong>node-cron</strong>: Task scheduler for cron-like functionality</li>
       <li><strong>commander</strong>: Command-line interface framework</li>
+      <li><strong>chalk</strong>: Terminal string styling for adding colors</li>
+      <li><strong>ora</strong>: Elegant terminal spinner</li>
+      <li><strong>pm2</strong>: Production process manager for Node.js applications</li>
     </ul>
     <p>All the dependencies will be automatically downloaded and installed.</p>
   </div>
@@ -66,7 +69,3 @@
   <p>Happy purging!</p>
 </body>
 </html>
-
-
-
-

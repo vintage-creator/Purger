@@ -3,25 +3,7 @@ const joi = require("joi");
 const path = require("path");
 const fs = require("fs");
 const yaml = require("js-yaml");
-const redis = require("redis");
-
-let redisClient = redis.createClient({
-  password: process.env.Redis_Pass,
-  socket: {
-    host: process.env.Redis_Host,
-    port: process.env.Redis_Port,
-  },
-});
-(async function () {
-  await redisClient.connect();
-})();
-// connect and error events
-redisClient.on("error", function (err) {
-  console.log("Something went wrong ", err);
-});
-redisClient.on("connect", function () {
-  console.log("Redis Connected!");
-});
+const redisClient = require("../config/redisConfig");
 
 //Create a configuration file
 const createConfig = async (req, res) => {
@@ -37,7 +19,7 @@ const createConfig = async (req, res) => {
   }
   const configSchema = joi.object({
     Directory_Path: joi.string().pattern(/^([a-zA-Z]:)?(\/[a-zA-Z0-9]+)*\/?$/),
-    Schedule: joi.string().pattern(/^\d+d$/),
+    Schedule: joi.string().pattern(/^\d+[dm]$/),
   });
 
   try {
@@ -99,17 +81,17 @@ const getConfig = async (req, res) => {
     } else {
       // Data is not cached, fetch it from the database
       const configFiles = await cleanUp.find({ user: _id }).sort({ _id: -1 });
-      // Cache the data in Redis for future requests
-      redisClient.set(_id, JSON.stringify(configFiles), {
-        EX: 180,
-        NX: true,
-      });
-      res.status(200).json({
-        fromCache: false,
-        status: "success",
-        data: configFiles,
-      });
-    }
+        // Cache the data in Redis for future requests
+        redisClient.set(_id, JSON.stringify(configFiles), {
+          EX: 180,
+          NX: true,
+        });
+        res.status(200).json({
+          fromCache: false,
+          status: "success",
+          data: configFiles,
+        });
+      }
   } catch (error) {
     res.status(400).json({
       status: "error",
@@ -135,8 +117,7 @@ const getAConfig = async (req, res) => {
       });
     } else {
       // Data is not cached, fetch it from the database
-      const configFile = await cleanUp.findOne({ user: id });
-      if (configFile !== null) {
+      const configFile = await cleanUp.findOne({ _id: id });
         // Cache the data in Redis for future requests
         redisClient.set(id, JSON.stringify(configFile), {
           EX: 180,
@@ -148,8 +129,6 @@ const getAConfig = async (req, res) => {
           data: configFile,
         });
       }
-      throw new Error("There's no clean-up configuration file.");
-    }
   } catch (err) {
     res.status(400).json({
       status: "error",

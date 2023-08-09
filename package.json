@@ -3,14 +3,22 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "bin": {
+    "purger-auth": "node ./CLI Script/auth_cli.js",
+    "purger-cleanup": "node ./CLI Script/cleanup_cli.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node ./Configure_files/server.js"
+    "start": "pm2 start ./Configure_files/server.js --name purger-app --cwd ./Configure_files --watch",
+    "start:dev": "cd configure_files && npm run dev"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "commander": "^11.0.0"
+    "axios": "^1.4.0",
+    "commander": "^11.0.0",
+    "dotenv": "^16.3.1",
+    "nodemailer": "^6.9.4"
   }
 }
