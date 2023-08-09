@@ -5,6 +5,7 @@
 <body>
   <h2>Purger - Installation Guide</h2>
   <p>Welcome to <strong>Purger</strong>, a powerful data clean-up tool! This guide will walk you through the installation process to get Purger up and running on your system.</p>
+  <img src="https://res.cloudinary.com/dcoxo8snb/image/upload/v1691362175/Purger_logo_mu2kjw.png" alt="Purger Logo">
   <h3>Prerequisites</h3>
   <p>Before you begin, make sure you have the following dependencies installed on your machine:</p>
   <ul>
